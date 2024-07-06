@@ -58,7 +58,10 @@
 #include "device/rdram/rdram.h"
 #include "osal/preproc.h"
 
-#define XXH_INLINE_ALL
+// TODO: should be "#define XXH_INLINE_ALL" for performance but that fails linking in debug
+#define XXH_STATIC_LINKING_ONLY
+#define XXH_PRIVATE_API
+#define XXH_SIZE_OPT 1
 #include <xxhash.h>
 
 #include <inttypes.h>
