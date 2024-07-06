@@ -41,6 +41,8 @@ CoreGetRomSettings;
 CoreOverrideVidExt;
 CoreShutdown;
 CoreStartup;
+SaveSavestate;
+LoadSavestate;
 DebugBreakpointCommand;
 DebugBreakpointLookup;
 DebugBreakpointTriggeredBy;
