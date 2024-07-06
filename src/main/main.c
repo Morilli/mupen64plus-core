@@ -948,17 +948,6 @@ static void video_plugin_render_callback(int bScreenRedrawn)
 
 void new_frame(void)
 {
-    if (g_FrameCallback != NULL)
-        (*g_FrameCallback)(l_CurrentFrame);
-
-    /* advance the current frame */
-    l_CurrentFrame++;
-
-    if (l_FrameAdvance) {
-        g_rom_pause = 1;
-        l_FrameAdvance = 0;
-        StateChanged(M64CORE_EMU_STATE, M64EMU_PAUSED);
-    }
 }
 
 static void apply_speed_limiter(void)
@@ -1049,6 +1038,18 @@ static void gs_apply_cheats(struct cheat_ctx* ctx)
 
 static void pause_loop(void)
 {
+    if (g_FrameCallback != NULL)
+        (*g_FrameCallback)(l_CurrentFrame);
+
+    /* advance the current frame */
+    l_CurrentFrame++;
+
+    if (l_FrameAdvance) {
+        g_rom_pause = 1;
+        l_FrameAdvance = 0;
+        StateChanged(M64CORE_EMU_STATE, M64EMU_PAUSED);
+    }
+
     if(g_rom_pause)
     {
         osd_render();  // draw Paused message in case gfx.updateScreen didn't do it
