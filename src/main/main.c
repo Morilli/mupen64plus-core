@@ -1056,7 +1056,7 @@ static void pause_loop(void)
         VidExt_GL_SwapBuffers();
         while(g_rom_pause)
         {
-            SDL_Delay(10);
+            SDL_Delay(1);
             main_check_inputs();
         }
     }
