@@ -27,6 +27,7 @@
 
 #include "api/m64p_types.h"
 #include "main/cheat.h"
+#include "main/savestates.h"
 #include "device/device.h"
 #include "osal/preproc.h"
 
@@ -83,7 +84,7 @@ void main_take_next_screenshot(void);
 
 void main_state_set_slot(int slot);
 void main_state_inc_slot(void);
-void main_state_load(const char *filename);
+void main_state_load(savestates_type format, const char *filename);
 void main_state_save(int format, const char *filename);
 
 m64p_error main_core_state_query(m64p_core_param param, int *rval);

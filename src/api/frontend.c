@@ -288,7 +288,7 @@ EXPORT m64p_error CALL CoreDoCommand(m64p_command Command, int ParamInt, void *P
                 return M64ERR_INPUT_ASSERT;
             return main_core_state_set((m64p_core_param) ParamInt, *((int *)ParamPtr));
         case M64CMD_STATE_LOAD:
-            main_state_load((char *) ParamPtr);
+            main_state_load((savestates_type) ParamInt, (char *) ParamPtr);
             savestates_load();
             return M64ERR_SUCCESS;
         case M64CMD_STATE_SAVE:
