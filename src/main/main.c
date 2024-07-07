@@ -1044,11 +1044,11 @@ static void pause_loop(void)
         StateChanged(M64CORE_EMU_STATE, M64EMU_PAUSED);
     }
 
-    /* advance the current frame */
-    l_CurrentFrame++;
-
     if (g_FrameCallback != NULL)
         (*g_FrameCallback)(l_CurrentFrame);
+
+    /* advance the current frame */
+    l_CurrentFrame++;
 
     if(g_rom_pause)
     {
