@@ -657,7 +657,7 @@ void main_state_inc_slot(void)
     savestates_inc_slot();
 }
 
-void main_state_load(const char *filename)
+void main_state_load(savestates_type format, const char *filename)
 {
     if (netplay_is_init())
         return;
@@ -665,7 +665,7 @@ void main_state_load(const char *filename)
     if (filename == NULL) // Save to slot
         savestates_set_job(savestates_job_load, savestates_type_m64p, NULL);
     else
-        savestates_set_job(savestates_job_load, savestates_type_unknown, filename);
+        savestates_set_job(savestates_job_load, format, filename);
 }
 
 void main_state_save(int format, const char *filename)
