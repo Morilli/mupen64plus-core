@@ -2059,6 +2059,8 @@ void main_stop(void)
         return;
 
     DebugMessage(M64MSG_STATUS, "Stopping emulation.");
+    stop_device(&g_dev);
+
     if(l_msgPause)
     {
         osd_delete_message(l_msgPause);
@@ -2079,8 +2081,6 @@ void main_stop(void)
         g_rom_pause = 0;
         StateChanged(M64CORE_EMU_STATE, M64EMU_RUNNING);
     }
-
-    stop_device(&g_dev);
 
 #ifdef DBG
     if(g_DebuggerActive)
