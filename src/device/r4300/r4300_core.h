@@ -24,6 +24,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #if defined(PROFILE_R4300)
 #include <stdio.h>
@@ -200,6 +201,7 @@ struct r4300_core
     uint32_t randomize_interrupt;
 
     uint32_t start_address;
+    bool debug_bypass_tlb_exception;
 };
 
 #define R4300_KSEG0 UINT32_C(0x80000000)

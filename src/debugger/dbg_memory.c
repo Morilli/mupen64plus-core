@@ -304,7 +304,10 @@ void write_memory_64_unaligned(struct device* dev, uint32_t addr, uint64_t value
 uint32_t read_memory_32(struct device* dev, uint32_t addr)
 {
     uint32_t value;
-    if (r4300_read_aligned_word(&dev->r4300, addr, &value) == 0)
+    dev->r4300.debug_bypass_tlb_exception = true;
+    bool invalid_read = r4300_read_aligned_word(&dev->r4300, addr, &value) == 0;
+    dev->r4300.debug_bypass_tlb_exception = false;
+    if (invalid_read)
         return M64P_MEM_INVALID;
     return value;
 }
@@ -319,7 +322,9 @@ uint32_t read_memory_32_unaligned(struct device* dev, uint32_t addr)
 
 void write_memory_32(struct device* dev, uint32_t addr, uint32_t value)
 {
+    dev->r4300.debug_bypass_tlb_exception = true;
     r4300_write_aligned_word(&dev->r4300, addr, value, 0xffffffff);
+    dev->r4300.debug_bypass_tlb_exception = false;
 }
 
 void write_memory_32_unaligned(struct device* dev, uint32_t addr, uint32_t value)
@@ -347,7 +352,9 @@ uint8_t read_memory_8(struct device* dev, uint32_t addr)
 {
     uint32_t word;
 
+    dev->r4300.debug_bypass_tlb_exception = true;
     word = read_memory_32(dev, addr & ~3);
+    dev->r4300.debug_bypass_tlb_exception = false;
     return (word >> ((3 - (addr & 3)) * 8)) & 0xFF;
 }
 
@@ -359,7 +366,9 @@ void write_memory_8(struct device* dev, uint32_t addr, uint8_t value)
     mask = 0xFF << ((3 - (addr & 3)) * 8);
     word = value << ((3 - (addr & 3)) * 8);
     
+    dev->r4300.debug_bypass_tlb_exception = true;
     r4300_write_aligned_word(&dev->r4300, addr, word, mask);
+    dev->r4300.debug_bypass_tlb_exception = false;
 }
 
 #ifdef DBG
