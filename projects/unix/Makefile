@@ -540,6 +540,7 @@ SOURCE = \
     $(SRCDIR)/backends/clock_ctime_plus_delta.c \
     $(SRCDIR)/backends/dummy_video_capture.c \
     $(SRCDIR)/backends/file_storage.c \
+    $(SRCDIR)/debugger/dbg_memory.c \
     $(SRCDIR)/device/cart/cart.c \
     $(SRCDIR)/device/cart/af_rtc.c \
     $(SRCDIR)/device/cart/cart_rom.c \
@@ -720,7 +721,6 @@ ifeq ($(DEBUGGER), 1)
   SOURCE += \
     $(SRCDIR)/debugger/dbg_debugger.c \
     $(SRCDIR)/debugger/dbg_decoder.c \
-    $(SRCDIR)/debugger/dbg_memory.c \
     $(SRCDIR)/debugger/dbg_breakpoints.c
   LDLIBS += -lopcodes -lbfd
 
