@@ -36,7 +36,7 @@
 #define ATTR_FMT(fmtpos, attrpos)
 #endif
 
-#if !defined(NO_ASM) && (defined(__i386__) || (defined(__x86_64__) && defined(__GNUC__)))
+#if defined(DBG) && !defined(NO_ASM) && (defined(__i386__) || (defined(__x86_64__) && defined(__GNUC__)))
 
 /* we must define PACKAGE so that bfd.h (which is included from dis-asm.h) doesn't throw an error */
 #define PACKAGE "mupen64plus-core"
@@ -275,8 +275,6 @@ void init_host_disassembler(void)
 
 #endif
 
-#ifdef DBG
-
 uint64_t read_memory_64(struct device* dev, uint32_t addr)
 {
     return ((uint64_t)read_memory_32(dev, addr) << 32) | (uint64_t)read_memory_32(dev, addr + 4);
@@ -363,6 +361,8 @@ void write_memory_8(struct device* dev, uint32_t addr, uint8_t value)
     
     r4300_write_aligned_word(&dev->r4300, addr, word, mask);
 }
+
+#ifdef DBG
 
 uint32_t get_memory_flags(struct device* dev, uint32_t addr)
 {
