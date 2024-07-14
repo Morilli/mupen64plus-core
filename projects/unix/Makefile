@@ -722,7 +722,7 @@ ifeq ($(DEBUGGER), 1)
     $(SRCDIR)/debugger/dbg_debugger.c \
     $(SRCDIR)/debugger/dbg_decoder.c \
     $(SRCDIR)/debugger/dbg_breakpoints.c
-  LDLIBS += -lopcodes -lbfd
+  LDLIBS += -lopcodes -lintl -liberty
 
   # UGLY libopcodes/libbfd version check (we check for >= 2.28 and >= 2.39)
   LIBOPCODES_VERSION := $(shell $(STRINGS) --version | head -n1 | rev | cut -d ' ' -f1 | rev)

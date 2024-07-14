@@ -38,6 +38,8 @@
 
 #if defined(DBG) && !defined(NO_ASM) && (defined(__i386__) || (defined(__x86_64__) && defined(__GNUC__)))
 
+void _bfd_error_handler(const char* fmt, ...) {}
+
 /* we must define PACKAGE so that bfd.h (which is included from dis-asm.h) doesn't throw an error */
 #define PACKAGE "mupen64plus-core"
 #include <dis-asm.h>

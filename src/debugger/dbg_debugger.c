@@ -46,12 +46,12 @@ uint32_t breakpointFlag;
 
 void init_debugger()
 {
-    if (!DebuggerCallbacksAreSet())
-    {
-        DebugMessage(M64MSG_WARNING, "Front-end debugger callbacks are not set, so debugger will remain disabled.");
-        return;
-    }
-    
+    // if (!DebuggerCallbacksAreSet())
+    // {
+        // DebugMessage(M64MSG_WARNING, "Front-end debugger callbacks are not set, so debugger will remain disabled.");
+        // return;
+    // }
+
     g_DebuggerActive = 1;
     g_dbg_runstate = M64P_DBG_RUNSTATE_PAUSED;
 
