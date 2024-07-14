@@ -54,7 +54,7 @@ static void (*callback_core_data_sync)(int, void *) = NULL;
 
 int DebuggerCallbacksAreSet(void)
 {
-    if (callback_ui_init != NULL && callback_ui_update != NULL && callback_ui_vi != NULL)
+    if (callback_ui_init != NULL || callback_ui_update != NULL || callback_ui_vi != NULL)
         return 1;
     else
         return 0;
@@ -177,7 +177,7 @@ EXPORT void CALL DebugDecodeOp(unsigned int instruction, char *op, char *args, i
 
 EXPORT void * CALL DebugMemGetRecompInfo(m64p_dbg_mem_info recomp_type, unsigned int address, int index)
 {
-#ifdef DBG
+#ifdef DBG_DISASSEMBLER
     struct r4300_core* r4300 = &g_dev.r4300;
 
     switch (recomp_type)
@@ -285,17 +285,12 @@ EXPORT unsigned long long CALL DebugMemRead64(unsigned int address)
 
 EXPORT unsigned int CALL DebugMemRead32(unsigned int address)
 {
-#ifdef DBG
     struct device* dev = &g_dev;
 
     if ((address & 3) == 0)
         return read_memory_32(dev, address);
     else
         return read_memory_32_unaligned(dev, address);
-#else
-    DebugMessage(M64MSG_ERROR, "Bug: DebugMemRead32() called, but Debugger not supported in Core library");
-    return 0;
-#endif
 }
 
 EXPORT unsigned short CALL DebugMemRead16(unsigned int address)
