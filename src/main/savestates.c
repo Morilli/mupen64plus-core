@@ -77,6 +77,9 @@ struct savestate_work {
     struct work_struct work;
 };
 
+void SaveSavestate(uint8_t* data);
+void LoadSavestate(uint8_t* data);
+
 /* Returns the malloc'd full path of the currently selected savestate. */
 static char *savestates_generate_path(savestates_type type)
 {
@@ -1519,16 +1522,7 @@ static void savestates_save_m64p_work(struct work_struct *work)
 
 static int savestates_save_m64p(const struct device* dev, char *filepath)
 {
-    unsigned char outbuf[4];
-    int i;
-
-    char queue[1024];
-
     struct savestate_work *save;
-    char *curr;
-
-    /* OK to cast away const qualifier */
-    const uint32_t* cp0_regs = r4300_cp0_regs((struct cp0*)&dev->r4300.cp0);
 
     save = malloc(sizeof(*save));
     if (!save) {
@@ -1542,11 +1536,9 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     if(autoinc_save_slot)
         savestates_inc_slot();
 
-    save_eventqueue_infos(&dev->r4300.cp0, queue);
-
     // Allocate memory for the save state data
-    save->size = 16788288 + sizeof(queue) + 4 + 4096;
-    save->data = curr = malloc(save->size);
+    save->size = 16788288 + 1024 + 4 + 4096;
+    save->data = malloc(save->size);
     if (save->data == NULL)
     {
         free(save->filepath);
@@ -1557,6 +1549,43 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     }
 
     memset(save->data, 0, save->size);
+    SaveSavestate((uint8_t*)save->data);
+
+    FILE* f = fopen(save->filepath, "wb");
+
+    if (f==NULL)
+    {
+        main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not open state file: %s", save->filepath);
+        free(save->data);
+        return 0;
+    }
+
+    size_t written = fwrite(save->data, 1, save->size, f);
+    if ((written < 0) || (written != save->size))
+    {
+        main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not write data to state file: %s", save->filepath);
+        fclose(f);
+        free(save->data);
+        return 0;
+    }
+
+    free(save->data);
+    free(save->filepath);
+    fclose(f);
+
+    return 1;
+}
+
+EXPORT void CALL SaveSavestate(uint8_t* data)
+{
+    unsigned char outbuf[4];
+    char queue[1024];
+    struct device* dev = &g_dev;
+    uint8_t* curr = data;
+
+    const uint32_t* cp0_regs = r4300_cp0_regs(&dev->r4300.cp0);
+
+    save_eventqueue_infos(&dev->r4300.cp0, queue);
 
     // Write the save state data to memory
     PUTARRAY(savestate_magic, curr, unsigned char, 8);
@@ -1731,7 +1760,7 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
 
     PUTDATA(curr, uint32_t, *r4300_cp1_fcr0((struct cp1*)&dev->r4300.cp1));
     PUTDATA(curr, uint32_t, *r4300_cp1_fcr31((struct cp1*)&dev->r4300.cp1));
-    for (i = 0; i < 32; i++)
+    for (int i = 0; i < 32; i++)
     {
         PUTDATA(curr, int16_t, dev->r4300.cp0.tlb.entries[i].mask);
         PUTDATA(curr, int16_t, 0);
@@ -1785,15 +1814,15 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     PUTDATA(curr, int64_t, dev->cart.af_rtc.now);
     PUTDATA(curr, int64_t, dev->cart.af_rtc.last_update_rtc);
 
-    for (i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
+    for (int i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
         PUTDATA(curr, uint8_t, dev->controllers[i].status);
     }
 
-    for (i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
+    for (int i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
         PUTDATA(curr, uint8_t, dev->rumblepaks[i].state);
     }
 
-    for (i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
+    for (int i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
         PUTDATA(curr, uint32_t, dev->transferpaks[i].enabled);
         PUTDATA(curr, uint32_t, dev->transferpaks[i].bank);
         PUTDATA(curr, uint32_t, dev->transferpaks[i].access_mode);
@@ -1822,7 +1851,7 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
         }
     }
 
-    for (i = 0; i < PIF_CHANNELS_COUNT; ++i) {
+    for (int i = 0; i < PIF_CHANNELS_COUNT; ++i) {
        PUTDATA(curr, int8_t, (dev->pif.channels[i].tx == NULL)
                ? (int8_t)-1
                : (int8_t)(dev->pif.channels[i].tx - dev->pif.ram));
@@ -1834,7 +1863,7 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
 
     PUTDATA(curr, uint32_t, dev->vi.count_per_scanline);
 
-    for (i = 1; i < RDRAM_MAX_MODULES_COUNT; ++i) {
+    for (int i = 1; i < RDRAM_MAX_MODULES_COUNT; ++i) {
         PUTDATA(curr, uint32_t, dev->rdram.regs[i][RDRAM_CONFIG_REG]);
         PUTDATA(curr, uint32_t, dev->rdram.regs[i][RDRAM_DEVICE_ID_REG]);
         PUTDATA(curr, uint32_t, dev->rdram.regs[i][RDRAM_DELAY_REG]);
@@ -1914,30 +1943,6 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     /* cp0 and cp2 latch (since 1.9) */
     PUTDATA(curr, uint64_t, *r4300_cp0_latch((struct cp0*)&dev->r4300.cp0));
     PUTDATA(curr, uint64_t, *r4300_cp2_latch((struct cp2*)&dev->r4300.cp2));
-
-    FILE* f = fopen(save->filepath, "wb");
-
-    if (f==NULL)
-    {
-        main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not open state file: %s", save->filepath);
-        free(save->data);
-        return 0;
-    }
-
-    size_t written = fwrite(save->data, 1, save->size, f);
-    if ((written < 0) || (written != save->size))
-    {
-        main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not write data to state file: %s", save->filepath);
-        fclose(f);
-        free(save->data);
-        return 0;
-    }
-
-    free(save->data);
-    free(save->filepath);
-    fclose(f);
-
-    return 1;
 }
 
 static int savestates_save_pj64(const struct device* dev,
