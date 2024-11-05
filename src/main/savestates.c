@@ -206,7 +206,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
 
     SDL_LockMutex(savestates_lock);
 
-    f = fopen(filepath, "rb");
+    f = osal_file_open(filepath, "rb");
     if(f==NULL)
     {
         main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not open state file: %s", filepath);
@@ -1551,27 +1551,8 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     memset(save->data, 0, save->size);
     SaveSavestate((uint8_t*)save->data);
 
-    FILE* f = fopen(save->filepath, "wb");
-
-    if (f==NULL)
-    {
-        main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not open state file: %s", save->filepath);
-        free(save->data);
-        return 0;
-    }
-
-    size_t written = fwrite(save->data, 1, save->size, f);
-    if ((written < 0) || (written != save->size))
-    {
-        main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not write data to state file: %s", save->filepath);
-        fclose(f);
-        free(save->data);
-        return 0;
-    }
-
-    free(save->data);
-    free(save->filepath);
-    fclose(f);
+    init_work(&save->work, savestates_save_m64p_work);
+    queue_work(&save->work);
 
     return 1;
 }
@@ -1579,7 +1560,10 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
 EXPORT void CALL SaveSavestate(uint8_t* data)
 {
     unsigned char outbuf[4];
+    int i;
+
     char queue[1024];
+
     struct device* dev = &g_dev;
     uint8_t* curr = data;
 
@@ -1760,7 +1744,7 @@ EXPORT void CALL SaveSavestate(uint8_t* data)
 
     PUTDATA(curr, uint32_t, *r4300_cp1_fcr0((struct cp1*)&dev->r4300.cp1));
     PUTDATA(curr, uint32_t, *r4300_cp1_fcr31((struct cp1*)&dev->r4300.cp1));
-    for (int i = 0; i < 32; i++)
+    for (i = 0; i < 32; i++)
     {
         PUTDATA(curr, int16_t, dev->r4300.cp0.tlb.entries[i].mask);
         PUTDATA(curr, int16_t, 0);
@@ -1814,15 +1798,15 @@ EXPORT void CALL SaveSavestate(uint8_t* data)
     PUTDATA(curr, int64_t, dev->cart.af_rtc.now);
     PUTDATA(curr, int64_t, dev->cart.af_rtc.last_update_rtc);
 
-    for (int i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
+    for (i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
         PUTDATA(curr, uint8_t, dev->controllers[i].status);
     }
 
-    for (int i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
+    for (i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
         PUTDATA(curr, uint8_t, dev->rumblepaks[i].state);
     }
 
-    for (int i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
+    for (i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
         PUTDATA(curr, uint32_t, dev->transferpaks[i].enabled);
         PUTDATA(curr, uint32_t, dev->transferpaks[i].bank);
         PUTDATA(curr, uint32_t, dev->transferpaks[i].access_mode);
@@ -1851,7 +1835,7 @@ EXPORT void CALL SaveSavestate(uint8_t* data)
         }
     }
 
-    for (int i = 0; i < PIF_CHANNELS_COUNT; ++i) {
+    for (i = 0; i < PIF_CHANNELS_COUNT; ++i) {
        PUTDATA(curr, int8_t, (dev->pif.channels[i].tx == NULL)
                ? (int8_t)-1
                : (int8_t)(dev->pif.channels[i].tx - dev->pif.ram));
@@ -1863,7 +1847,7 @@ EXPORT void CALL SaveSavestate(uint8_t* data)
 
     PUTDATA(curr, uint32_t, dev->vi.count_per_scanline);
 
-    for (int i = 1; i < RDRAM_MAX_MODULES_COUNT; ++i) {
+    for (i = 1; i < RDRAM_MAX_MODULES_COUNT; ++i) {
         PUTDATA(curr, uint32_t, dev->rdram.regs[i][RDRAM_CONFIG_REG]);
         PUTDATA(curr, uint32_t, dev->rdram.regs[i][RDRAM_DEVICE_ID_REG]);
         PUTDATA(curr, uint32_t, dev->rdram.regs[i][RDRAM_DELAY_REG]);
