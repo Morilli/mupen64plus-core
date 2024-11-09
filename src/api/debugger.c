@@ -177,7 +177,7 @@ EXPORT void CALL DebugDecodeOp(unsigned int instruction, char *op, char *args, i
 
 EXPORT void * CALL DebugMemGetRecompInfo(m64p_dbg_mem_info recomp_type, unsigned int address, int index)
 {
-#ifdef DBG
+#ifdef DBG_DISASSEMBLER
     struct r4300_core* r4300 = &g_dev.r4300;
 
     switch (recomp_type)
