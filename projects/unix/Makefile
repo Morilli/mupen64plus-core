@@ -722,7 +722,14 @@ ifeq ($(DEBUGGER), 1)
     $(SRCDIR)/debugger/dbg_debugger.c \
     $(SRCDIR)/debugger/dbg_decoder.c \
     $(SRCDIR)/debugger/dbg_breakpoints.c
-  LDLIBS += -lopcodes -lintl -liberty
+  ifeq ($(DEBUGGER_DISASM), 1)
+    CFLAGS += -DDBG_DISASSEMBLER
+    ifeq ("$(OS)","MINGW")
+      LDLIBS += -lopcodes -lintl -liberty
+    else
+      LDLIBS += -lbfd
+    endif
+  endif
 
   # UGLY libopcodes/libbfd version check (we check for >= 2.28 and >= 2.39)
   LIBOPCODES_VERSION := $(shell $(STRINGS) --version | head -n1 | rev | cut -d ' ' -f1 | rev)
