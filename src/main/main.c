@@ -75,7 +75,7 @@
 #endif
 #include "rom.h"
 #include "savestates.h"
-#include "screenshot.h"
+// #include "screenshot.h"
 #include "util.h"
 #include "netplay.h"
 
@@ -926,7 +926,7 @@ static void video_plugin_render_callback(int bScreenRedrawn)
         if (!bOSD || bScreenRedrawn)
 #endif /* M64P_OSD */
         {
-            TakeScreenshot(l_TakeScreenshot - 1);  // current frame number +1 is in l_TakeScreenshot
+            // TakeScreenshot(l_TakeScreenshot - 1);  // current frame number +1 is in l_TakeScreenshot
             l_TakeScreenshot = 0; // reset flag
         }
     }

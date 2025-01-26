@@ -301,6 +301,7 @@ ifeq ($(OS), OSX) # use system zlib on OSX
   ZLIB_LDLIBS += -lz
 endif
 
+ifeq ("false",)
 ifeq ($(origin ZLIB_CFLAGS) $(origin ZLIB_LDLIBS), undefined undefined)
   ifeq ($(shell $(PKG_CONFIG) --modversion zlib 2>/dev/null),)
     $(error No zlib development libraries found!)
@@ -335,6 +336,7 @@ ifeq ($(origin LIBPNG_CFLAGS) $(origin LIBPNG_LDLIBS), undefined undefined)
 endif
 CFLAGS += $(LIBPNG_CFLAGS)
 LDLIBS += $(LIBPNG_LDLIBS)
+endif
 
 ifeq ($(OPENCV), 1)
   # OpenCV lib
@@ -590,7 +592,6 @@ SOURCE = \
     $(SRCDIR)/main/eventloop.c \
     $(SRCDIR)/main/rom.c \
     $(SRCDIR)/main/savestates.c \
-    $(SRCDIR)/main/screenshot.c \
     $(SRCDIR)/main/sdl_key_converter.c \
     $(SRCDIR)/main/workqueue.c \
     $(SRCDIR)/plugin/plugin.c \

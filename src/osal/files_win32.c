@@ -214,9 +214,11 @@ FILE * osal_file_open ( const char * filename, const char * mode )
     return _wfopen (wstr_filename, wstr_mode);
 }
 
+/*
 gzFile osal_gzopen(const char *filename, const char *mode)
 {
     wchar_t wstr_filename[PATH_MAX];
     MultiByteToWideChar(CP_UTF8, 0, filename, -1, wstr_filename, PATH_MAX);
     return gzopen_w(wstr_filename, mode);
 }
+*/
