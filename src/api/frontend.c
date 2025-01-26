@@ -193,7 +193,7 @@ EXPORT m64p_error CALL CoreDoCommand(m64p_command Command, int ParamInt, void *P
             if (rval == M64ERR_SUCCESS)
             {
                 l_ROMOpen = 1;
-                ScreenshotRomOpen();
+                // ScreenshotRomOpen();
                 cheat_init(&g_cheat_ctx);
             }
             return rval;
@@ -213,7 +213,7 @@ EXPORT m64p_error CALL CoreDoCommand(m64p_command Command, int ParamInt, void *P
             if (rval == M64ERR_SUCCESS)
             {
                 l_DiskOpen = 1;
-                ScreenshotRomOpen();
+                // ScreenshotRomOpen();
                 cheat_init(&g_cheat_ctx);
             }
             return rval;
