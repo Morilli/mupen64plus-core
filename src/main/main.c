@@ -948,6 +948,8 @@ static void video_plugin_render_callback(int bScreenRedrawn)
 
 void new_frame(void)
 {
+    if (g_FrameCallback != NULL)
+        (*g_FrameCallback)(-1);
 }
 
 static void apply_speed_limiter(void)

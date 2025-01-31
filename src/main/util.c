@@ -434,7 +434,7 @@ uint64_t xoshiro256pp_next(struct xoshiro256pp_state* s) {
 }
 
 #ifdef _WIN32
-HANDLE timer;
+static HANDLE timer;
 
 void good_usleep(useconds_t usec) {
     if (!timer)
