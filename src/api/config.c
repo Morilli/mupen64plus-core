@@ -446,7 +446,6 @@ m64p_error ConfigInit(const char *ConfigDirOverride, const char *DataDirOverride
     if (l_ConfigInit)
         return M64ERR_ALREADY_INIT;
     l_ConfigInit = 1;
-    return M64ERR_SUCCESS;
 
     /* if a data directory was specified, make a copy of it */
     if (DataDirOverride != NULL)
@@ -463,6 +462,8 @@ m64p_error ConfigInit(const char *ConfigDirOverride, const char *DataDirOverride
         if (l_ConfigDirOverride == NULL)
             return M64ERR_NO_MEMORY;
     }
+
+    return M64ERR_SUCCESS;
 
     /* get the full pathname to the config file and try to open it */
     configpath = ConfigGetUserConfigPath();
