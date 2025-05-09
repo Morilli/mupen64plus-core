@@ -187,7 +187,7 @@ EXPORT m64p_error CALL CoreDoCommand(m64p_command Command, int ParamInt, void *P
             if (rval == M64ERR_SUCCESS)
             {
                 l_ROMOpen = 1;
-                ScreenshotRomOpen();
+                // ScreenshotRomOpen();
                 cheat_init(&g_cheat_ctx);
             }
             return rval;
@@ -207,7 +207,7 @@ EXPORT m64p_error CALL CoreDoCommand(m64p_command Command, int ParamInt, void *P
             if (rval == M64ERR_SUCCESS)
             {
                 l_DiskOpen = 1;
-                ScreenshotRomOpen();
+                // ScreenshotRomOpen();
                 cheat_init(&g_cheat_ctx);
             }
             return rval;
@@ -455,4 +455,90 @@ EXPORT m64p_error CALL CoreGetRomSettings(m64p_rom_settings *RomSettings, int Ro
     return M64ERR_SUCCESS;
 }
 
+#include "../backends/api/storage_backend.h"
+EXPORT m64p_error CALL GetSaveRamSize(int* outSize)
+{
+    if (!l_CoreInit)
+        return M64ERR_NOT_INIT;
+    if (!g_EmulatorRunning)
+        return M64ERR_INVALID_STATE;
 
+    int size = g_dev.cart.eeprom.istorage->size(g_dev.cart.eeprom.storage);
+    if (g_dev.cart.use_flashram == -1)
+        size += g_dev.cart.sram.istorage->size(g_dev.cart.sram.storage);
+    else if (g_dev.cart.use_flashram == 1)
+        size += g_dev.cart.flashram.istorage->size(g_dev.cart.flashram.storage);
+    for (int i = 0; i < 4; i++) {
+        if (Controls[i].Present && Controls[i].Plugin == PLUGIN_MEMPAK){
+            size += g_dev.mempaks[i].istorage->size(g_dev.mempaks[i].storage);
+        }
+    }
+
+    *outSize = size;
+
+    return M64ERR_SUCCESS;
+}
+
+EXPORT m64p_error CALL GetSaveRam(uint8_t* outBuffer)
+{
+    if (!l_CoreInit)
+        return M64ERR_NOT_INIT;
+    if (!g_EmulatorRunning)
+        return M64ERR_INVALID_STATE;
+
+    int eepromSize = g_dev.cart.eeprom.istorage->size(g_dev.cart.eeprom.storage);
+    memcpy(outBuffer, g_dev.cart.eeprom.istorage->data(g_dev.cart.eeprom.storage), eepromSize);
+    outBuffer += eepromSize;
+
+    if (g_dev.cart.use_flashram == -1) {
+        int sramSize = g_dev.cart.sram.istorage->size(g_dev.cart.sram.storage);
+        memcpy(outBuffer, g_dev.cart.sram.istorage->data(g_dev.cart.sram.storage), sramSize);
+        outBuffer += sramSize;
+    } else if (g_dev.cart.use_flashram == 1) {
+        int flashramSize = g_dev.cart.flashram.istorage->size(g_dev.cart.flashram.storage);
+        memcpy(outBuffer, g_dev.cart.flashram.istorage->data(g_dev.cart.flashram.storage), flashramSize);
+        outBuffer += flashramSize;
+    }
+
+    for (int i = 0; i < 4; i++) {
+        if (Controls[i].Present && Controls[i].Plugin == PLUGIN_MEMPAK) {
+            int mempakSize = g_dev.mempaks[i].istorage->size(g_dev.mempaks[i].storage);
+            memcpy(outBuffer, g_dev.mempaks[i].istorage->data(g_dev.mempaks[i].storage), mempakSize);
+            outBuffer += mempakSize;
+        }
+    }
+
+    return M64ERR_SUCCESS;
+}
+
+EXPORT m64p_error CALL PutSaveRam(uint8_t* buffer)
+{
+    if (!l_CoreInit)
+        return M64ERR_NOT_INIT;
+    if (!g_EmulatorRunning)
+        return M64ERR_INVALID_STATE;
+
+    int eepromSize = g_dev.cart.eeprom.istorage->size(g_dev.cart.eeprom.storage);
+    memcpy(g_dev.cart.eeprom.istorage->data(g_dev.cart.eeprom.storage), buffer, eepromSize);
+    buffer += eepromSize;
+
+    if (g_dev.cart.use_flashram == -1) {
+        int sramSize = g_dev.cart.sram.istorage->size(g_dev.cart.sram.storage);
+        memcpy(g_dev.cart.sram.istorage->data(g_dev.cart.sram.storage), buffer, sramSize);
+        buffer += sramSize;
+    } else if (g_dev.cart.use_flashram == 1) {
+        int flashramSize = g_dev.cart.flashram.istorage->size(g_dev.cart.flashram.storage);
+        memcpy(g_dev.cart.flashram.istorage->data(g_dev.cart.flashram.storage), buffer, flashramSize);
+        buffer += flashramSize;
+    }
+
+    for (int i = 0; i < 4; i++) {
+        if (Controls[i].Present && Controls[i].Plugin == PLUGIN_MEMPAK) {
+            int mempakSize = g_dev.mempaks[i].istorage->size(g_dev.mempaks[i].storage);
+            memcpy(g_dev.mempaks[i].istorage->data(g_dev.mempaks[i].storage), buffer, mempakSize);
+            buffer += mempakSize;
+        }
+    }
+
+    return M64ERR_SUCCESS;
+}

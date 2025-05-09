@@ -237,7 +237,9 @@ FILE * osal_file_open(const char *filename, const char *mode)
     return fopen (filename, mode);
 }
 
+/*
 gzFile osal_gzopen(const char *filename, const char *mode)
 {
     return gzopen(filename, mode);
 }
+*/

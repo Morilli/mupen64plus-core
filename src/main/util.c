@@ -433,6 +433,22 @@ uint64_t xoshiro256pp_next(struct xoshiro256pp_state* s) {
     return result;
 }
 
+#ifdef _WIN32
+static HANDLE timer;
+
+void good_usleep(useconds_t usec) {
+    if (!timer)
+        timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+
+    LARGE_INTEGER ft = {
+        .QuadPart = -(10ull * usec)  // Convert to 100 nanosecond interval, negative value indicates relative time
+    };
+
+    SetWaitableTimerEx(timer, &ft, 0, NULL, NULL, NULL, 0);
+    WaitForSingleObject(timer, INFINITE);
+}
+#endif
+
 /**********************
      GUI utilities
  **********************/

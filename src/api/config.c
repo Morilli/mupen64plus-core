@@ -368,6 +368,7 @@ static void copy_configlist_active_to_saved(void)
 
 static m64p_error write_configlist_file(void)
 {
+    return M64ERR_UNSUPPORTED;
     config_section *curr_section;
     const char *configpath;
     char *filepath;
@@ -461,6 +462,8 @@ m64p_error ConfigInit(const char *ConfigDirOverride, const char *DataDirOverride
         if (l_ConfigDirOverride == NULL)
             return M64ERR_NO_MEMORY;
     }
+
+    return M64ERR_SUCCESS;
 
     /* get the full pathname to the config file and try to open it */
     configpath = ConfigGetUserConfigPath();

@@ -27,8 +27,14 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "osal/preproc.h"
+
+#ifdef _WIN32
+void good_usleep(useconds_t usec);
+#define usleep(usec) good_usleep(usec)
+#endif
 
 #if defined(__GNUC__)
 #define ATTR_FMT(fmtpos, attrpos) __attribute__ ((format (printf, fmtpos, attrpos)))

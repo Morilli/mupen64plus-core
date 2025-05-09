@@ -54,7 +54,7 @@ static void (*callback_core_data_sync)(int, void *) = NULL;
 
 int DebuggerCallbacksAreSet(void)
 {
-    if (callback_ui_init != NULL && callback_ui_update != NULL && callback_ui_vi != NULL)
+    if (callback_ui_init != NULL || callback_ui_update != NULL || callback_ui_vi != NULL)
         return 1;
     else
         return 0;
@@ -177,7 +177,7 @@ EXPORT void CALL DebugDecodeOp(unsigned int instruction, char *op, char *args, i
 
 EXPORT void * CALL DebugMemGetRecompInfo(m64p_dbg_mem_info recomp_type, unsigned int address, int index)
 {
-#ifdef DBG
+#ifdef DBG_DISASSEMBLER
     struct r4300_core* r4300 = &g_dev.r4300;
 
     switch (recomp_type)
@@ -246,6 +246,28 @@ EXPORT void * CALL DebugMemGetPointer(m64p_dbg_memptr_type mem_ptr_type)
     }
 }
 
+EXPORT uint64_t CALL DebugMemGetSize(m64p_dbg_memptr_type mem_ptr_type)
+{
+    switch (mem_ptr_type)
+    {
+        case M64P_DBG_PTR_RDRAM:
+            return g_dev.rdram.dram_size;
+        case M64P_DBG_PTR_PI_REG:
+            return sizeof(g_dev.pi.regs);
+        case M64P_DBG_PTR_SI_REG:
+            return sizeof(g_dev.si.regs);
+        case M64P_DBG_PTR_VI_REG:
+            return sizeof(g_dev.vi.regs);
+        case M64P_DBG_PTR_RI_REG:
+            return sizeof(g_dev.ri.regs);
+        case M64P_DBG_PTR_AI_REG:
+            return sizeof(g_dev.ai.regs);
+        default:
+            DebugMessage(M64MSG_ERROR, "Bug: DebugMemGetSize() called with invalid m64p_dbg_memptr_type: %d", mem_ptr_type);
+            return 0;
+    }
+}
+
 EXPORT unsigned long long CALL DebugMemRead64(unsigned int address)
 {
 #ifdef DBG
@@ -263,17 +285,12 @@ EXPORT unsigned long long CALL DebugMemRead64(unsigned int address)
 
 EXPORT unsigned int CALL DebugMemRead32(unsigned int address)
 {
-#ifdef DBG
     struct device* dev = &g_dev;
 
     if ((address & 3) == 0)
         return read_memory_32(dev, address);
     else
         return read_memory_32_unaligned(dev, address);
-#else
-    DebugMessage(M64MSG_ERROR, "Bug: DebugMemRead32() called, but Debugger not supported in Core library");
-    return 0;
-#endif
 }
 
 EXPORT unsigned short CALL DebugMemRead16(unsigned int address)
@@ -290,14 +307,9 @@ EXPORT unsigned short CALL DebugMemRead16(unsigned int address)
 
 EXPORT unsigned char CALL DebugMemRead8(unsigned int address)
 {
-#ifdef DBG
     struct device* dev = &g_dev;
 
     return read_memory_8(dev, address);
-#else
-    DebugMessage(M64MSG_ERROR, "Bug: DebugMemRead8() called, but Debugger not supported in Core library");
-    return 0;
-#endif
 }
 
 EXPORT void CALL DebugMemWrite64(unsigned int address, unsigned long long value)
@@ -341,13 +353,9 @@ EXPORT void CALL DebugMemWrite16(unsigned int address, unsigned short value)
 
 EXPORT void CALL DebugMemWrite8(unsigned int address, unsigned char value)
 {
-#ifdef DBG
     struct device* dev = &g_dev;
 
     write_memory_8(dev, address, value);
-#else
-    DebugMessage(M64MSG_ERROR, "Bug: DebugMemWrite8() called, but Debugger not supported in Core library");
-#endif
 }
 
 EXPORT void * CALL DebugGetCPUDataPtr(m64p_dbg_cpu_data cpu_data_type)

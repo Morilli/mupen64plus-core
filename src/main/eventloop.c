@@ -138,20 +138,20 @@ static int MatchJoyCommand(const SDL_Event *event, eJoyCommand cmd)
     char tokenized_event_str[128];
     strncpy(tokenized_event_str, multi_event_str, 127);
     tokenized_event_str[127] = '\0';
-    
+
     /* Iterate over comma-separated config phrases */
     char *phrase_str = strtok(tokenized_event_str, ",");
     while (phrase_str != NULL)
     {
         int iHotkey, has_hotkey = 0;
-        
+
         /* Check for invalid phrase */
         if (strlen(phrase_str) < 4 || phrase_str[0] != 'J')
         {
             phrase_str = strtok(NULL, ",");
             continue;
         }
-        
+
         /* Get device (joystick) number */
         if (phrase_str[1] == '*')
         {
@@ -246,7 +246,7 @@ static int MatchJoyCommand(const SDL_Event *event, eJoyCommand cmd)
                     break;
             }
         } /* Iterate over JoyAction/JoyHotkey action fields */
-        
+
         /* Detect changes in command activation status */
         const int new_cmd_value = (JoyCmdActive[cmd][1] << 1) | JoyCmdActive[cmd][0];
         const int active_mask = has_hotkey ? 3 : 1;
@@ -431,7 +431,7 @@ void event_initialize(void)
                     SDL_Joystick *thisJoy = SDL_JoystickOpen(device);
 			        l_iJoyInstanceID[device] = SDL_JoystickInstanceID(thisJoy);
                 }
-                
+
                 phrase_str = strtok(NULL, ",");
             } /* Iterate over comma-separated config phrases */
         }
@@ -440,7 +440,7 @@ void event_initialize(void)
 
 
     /* set up SDL event filter and disable key repeat */
-    SDL_SetEventFilter(event_sdl_filter, NULL);
+    // SDL_SetEventFilter(event_sdl_filter, NULL);
 }
 
 int event_set_core_defaults(void)
@@ -639,4 +639,3 @@ void event_set_gameshark(int active)
     // notify front-end application that gameshark button state has changed
     StateChanged(M64CORE_INPUT_GAMESHARK, GamesharkActive);
 }
-

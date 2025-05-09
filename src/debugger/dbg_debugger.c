@@ -51,7 +51,7 @@ void init_debugger()
         DebugMessage(M64MSG_WARNING, "Front-end debugger callbacks are not set, so debugger will remain disabled.");
         return;
     }
-    
+
     g_DebuggerActive = 1;
     g_dbg_runstate = M64P_DBG_RUNSTATE_PAUSED;
 
