@@ -301,6 +301,7 @@ ifeq ($(OS), OSX) # use system zlib on OSX
   ZLIB_LDLIBS += -lz
 endif
 
+ifeq ("false",)
 ifeq ($(origin ZLIB_CFLAGS) $(origin ZLIB_LDLIBS), undefined undefined)
   ifeq ($(shell $(PKG_CONFIG) --modversion zlib 2>/dev/null),)
     $(error No zlib development libraries found!)
@@ -335,6 +336,7 @@ ifeq ($(origin LIBPNG_CFLAGS) $(origin LIBPNG_LDLIBS), undefined undefined)
 endif
 CFLAGS += $(LIBPNG_CFLAGS)
 LDLIBS += $(LIBPNG_LDLIBS)
+endif
 
 ifeq ($(OPENCV), 1)
   # OpenCV lib
@@ -540,6 +542,7 @@ SOURCE = \
     $(SRCDIR)/backends/clock_ctime_plus_delta.c \
     $(SRCDIR)/backends/dummy_video_capture.c \
     $(SRCDIR)/backends/file_storage.c \
+    $(SRCDIR)/debugger/dbg_memory.c \
     $(SRCDIR)/device/cart/cart.c \
     $(SRCDIR)/device/cart/af_rtc.c \
     $(SRCDIR)/device/cart/cart_rom.c \
@@ -589,7 +592,6 @@ SOURCE = \
     $(SRCDIR)/main/eventloop.c \
     $(SRCDIR)/main/rom.c \
     $(SRCDIR)/main/savestates.c \
-    $(SRCDIR)/main/screenshot.c \
     $(SRCDIR)/main/sdl_key_converter.c \
     $(SRCDIR)/main/workqueue.c \
     $(SRCDIR)/plugin/plugin.c \
@@ -720,9 +722,15 @@ ifeq ($(DEBUGGER), 1)
   SOURCE += \
     $(SRCDIR)/debugger/dbg_debugger.c \
     $(SRCDIR)/debugger/dbg_decoder.c \
-    $(SRCDIR)/debugger/dbg_memory.c \
     $(SRCDIR)/debugger/dbg_breakpoints.c
-  LDLIBS += -lopcodes -lbfd
+  ifeq ($(DEBUGGER_DISASM), 1)
+    CFLAGS += -DDBG_DISASSEMBLER
+    ifeq ("$(OS)","MINGW")
+      LDLIBS += -lopcodes -lintl -liberty
+    else
+      LDLIBS += -lbfd
+    endif
+  endif
 
   # UGLY libopcodes/libbfd version check (we check for >= 2.28 and >= 2.39)
   LIBOPCODES_VERSION := $(shell $(STRINGS) --version | head -n1 | rev | cut -d ' ' -f1 | rev)

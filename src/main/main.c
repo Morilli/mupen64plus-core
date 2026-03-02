@@ -75,7 +75,7 @@
 #endif
 #include "rom.h"
 #include "savestates.h"
-#include "screenshot.h"
+// #include "screenshot.h"
 #include "util.h"
 #include "netplay.h"
 
@@ -383,7 +383,7 @@ static void main_check_inputs(void)
 #ifdef WITH_LIRC
     lircCheckInput();
 #endif
-    SDL_PumpEvents();
+    // SDL_PumpEvents();
 }
 
 /*********************************************************************************************************
@@ -926,7 +926,7 @@ static void video_plugin_render_callback(int bScreenRedrawn)
         if (!bOSD || bScreenRedrawn)
 #endif /* M64P_OSD */
         {
-            TakeScreenshot(l_TakeScreenshot - 1);  // current frame number +1 is in l_TakeScreenshot
+            // TakeScreenshot(l_TakeScreenshot - 1);  // current frame number +1 is in l_TakeScreenshot
             l_TakeScreenshot = 0; // reset flag
         }
     }
@@ -948,17 +948,6 @@ static void video_plugin_render_callback(int bScreenRedrawn)
 
 void new_frame(void)
 {
-    if (g_FrameCallback != NULL)
-        (*g_FrameCallback)(l_CurrentFrame);
-
-    /* advance the current frame */
-    l_CurrentFrame++;
-
-    if (l_FrameAdvance) {
-        g_rom_pause = 1;
-        l_FrameAdvance = 0;
-        StateChanged(M64CORE_EMU_STATE, M64EMU_PAUSED);
-    }
 }
 
 static void apply_speed_limiter(void)
@@ -1049,13 +1038,25 @@ static void gs_apply_cheats(struct cheat_ctx* ctx)
 
 static void pause_loop(void)
 {
+    if (l_FrameAdvance) {
+        g_rom_pause = 1;
+        l_FrameAdvance = 0;
+        StateChanged(M64CORE_EMU_STATE, M64EMU_PAUSED);
+    }
+
+    if (g_FrameCallback != NULL)
+        (*g_FrameCallback)(l_CurrentFrame);
+
+    /* advance the current frame */
+    l_CurrentFrame++;
+
     if(g_rom_pause)
     {
         osd_render();  // draw Paused message in case gfx.updateScreen didn't do it
         VidExt_GL_SwapBuffers();
         while(g_rom_pause)
         {
-            SDL_Delay(10);
+            usleep(500);
             main_check_inputs();
         }
     }
@@ -2058,6 +2059,8 @@ void main_stop(void)
         return;
 
     DebugMessage(M64MSG_STATUS, "Stopping emulation.");
+    stop_device(&g_dev);
+
     if(l_msgPause)
     {
         osd_delete_message(l_msgPause);
@@ -2078,8 +2081,6 @@ void main_stop(void)
         g_rom_pause = 0;
         StateChanged(M64CORE_EMU_STATE, M64EMU_RUNNING);
     }
-
-    stop_device(&g_dev);
 
 #ifdef DBG
     if(g_DebuggerActive)
